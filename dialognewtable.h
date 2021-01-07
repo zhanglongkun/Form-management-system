@@ -19,8 +19,8 @@ private:
     Ui::DialogNewTable *ui;
 
 public slots:
-    void on_ok_clicked();
-    void on_cancel_clicked();
+    void on_buttonAdd_clicked();
+    void on_buttonDel_clicked();
     void closeEvent(QCloseEvent *e);
 };
 

@@ -77,6 +77,7 @@ public:
     void tableInit();
     void tableHandleShow(QTreeWidgetItem *item, int type);
 
+    mysqlit mySqlitDB;
 
 public slots:
     void on_clearAction_triggered();
@@ -107,7 +108,6 @@ private:
     QMap<QString, StyleItems> pageMap;
     int markedCount;
 
-    mysqlit mySqlitDB;
     DialogNewTable *newWindow;
 
 };

@@ -71,8 +71,9 @@ int mysqlit::sqlitGetTableForMonth(QString field, QVector<stru_table> &list)
             stru_table table;
             table.id = sql_query.value(0).toString();
             table.name = sql_query.value(1).toString();
-            table.dealTime = QDateTime::fromTime_t(sql_query.value(2).toInt()).toString("yyyy-MM-dd");
-            table.type = sql_query.value(3).toString();
+//            table.trancetion_time = QDateTime::fromTime_t(sql_query.value(2).toInt()).toString("yyyy-MM-dd");
+            table.trancetion_time = sql_query.value(2).toString();
+            table.type = sql_query.value(3).toInt();
             list.append(table);
         }
     }
@@ -157,6 +158,20 @@ int mysqlit::sqlitGetTableData(QString table, QVector<stru_table_data> &list)
 
  return 0;
 }
+int mysqlit::sqlitSetTableInfo(stru_table info)
+{
+    QSqlQuery sql_query;
+    QString sql_cmd;
+
+    sql_cmd = QString(SQL_INSERT_TABLE_LIST).arg(info.name).arg(info.time_group).arg(info.trancetion_time).arg(info.create_time).arg(info.type);
+    qDebug() << "111111" << sql_cmd;
+    if(!sql_query.exec(sql_cmd)) {
+        qDebug() << "Error: Fail to create table."<< sql_query.lastError();
+    } else {
+        qDebug() << "list created!";
+    }
+}
+
 
 
 int mysqlit::testInit()
@@ -184,9 +199,9 @@ int mysqlit::testInit()
         sql_cmd = QString(SQL_CREATE_TABLE).arg(timeGroup);
         qDebug() << "111111" << sql_cmd;
         if(!sql_query.exec(sql_cmd)) {
-         qDebug() << "Error: Fail to create table."<< sql_query.lastError();
+           qDebug() << "Error: Fail to create table."<< sql_query.lastError();
         } else {
-         qDebug() << "list created!";
+           qDebug() << "list created!";
         }
 
         sql_cmd = QString(SQL_INSERT_DATA).arg(timeGroup).arg(timeGroup).arg("编号").arg("名称aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").arg("规格aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").arg("单位").arg("数量").arg("单价").arg("金额").arg("备注");

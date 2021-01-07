@@ -15,8 +15,10 @@ public:
     typedef struct _stru_table {
         QString id;
         QString name;
-        QString dealTime;
-        QString type;
+        QString time_group;
+        QString trancetion_time;
+        double create_time;
+        int type;
     } stru_table;
 
     typedef struct _stru_table_data {
@@ -41,6 +43,7 @@ public:
     int sqlitGetTableForMonth(QString field, QVector<stru_table> &list);
     int sqlitGetTableData(QString table, QString id, QVector<stru_table_data> &list);
     int sqlitGetTableData(QString table, QVector<stru_table_data> &list);
+    int sqlitSetTableInfo(stru_table info);
 
 
 

@@ -121,8 +121,8 @@ void MainWindow::setupFontTree()
                 QTreeWidgetItem *styleItem = new QTreeWidgetItem(familyItem);
                 styleItem->setText(0, table.name);
                 styleItem->setText(1, table.id);
-                styleItem->setText(2, table.dealTime);
-                styleItem->setText(3, table.type);
+                styleItem->setText(2, table.trancetion_time);
+                styleItem->setText(3, QString("%1").arg(table.type));
                // styleItem->setCheckState(0, Qt::Unchecked);
             }
         }
@@ -409,9 +409,7 @@ void MainWindow::tableInit()
 
     dateEdit->setCalendarPopup(true);
     dateEdit->setFocusPolicy(Qt::NoFocus);
-    dateEdit->setDate(QDateTime::currentDateTime().date());
-    dateEdit->setDisplayFormat("yyyy-MM-dd");
-    
+
     checkBoxRecently->setChecked(true);
     checkBoxAll->setChecked(false);
 }
@@ -423,10 +421,25 @@ void MainWindow::tableHandleShow(QTreeWidgetItem *item, int type)
     if (1 == type) {
         mySqlitDB.sqlitGetTableData(item->text(0), list);
         lineEditName->setText(item->text(0));
+        comboBox->setCurrentIndex(3);
+        dateEdit->setDisplayFormat("yyyy-MM");
+        dateEdit->setDate(QDate::fromString(item->text(0),"yyyy-MM"));
     } else {
         mySqlitDB.sqlitGetTableData(item->parent()->text(0), item->text(1), list);
         lineEditName->setText(item->text(0));
+        dateEdit->setDisplayFormat("yyyy-MM-dd");
+        dateEdit->setDate(QDate::fromString(item->text(2),"yyyy-MM-dd"));
+        if (1 == item->text(3).toInt()) {
+            comboBox->setCurrentIndex(1);
+        } else if (2 == item->text(3).toInt()) {
+            comboBox->setCurrentIndex(2);
+        } else if (2 == item->text(3).toInt()) {
+            comboBox->setCurrentIndex(3);
+        } else {
+            comboBox->setCurrentIndex(0);
+        }
     }
+
 
     for(int i = tableWidget->rowCount() - 1; i >= 0; i--) {
         tableWidget->removeRow(i);
