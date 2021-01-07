@@ -88,9 +88,13 @@ public slots:
     void printPage(int index, QPainter *painter, QPrinter *printer);
     void showFont(QTreeWidgetItem *item);
     void updateStyles(QTreeWidgetItem *item, int column);
+    
     void on_buttonAdd_clicked();
     void on_buttonDel_clicked();
+    void on_buttonSave_clicked();
     void on_actionNewTable_triggered();
+    void on_checkBoxAll_clicked();
+    void on_checkBoxRecently_clicked();
 
 
 

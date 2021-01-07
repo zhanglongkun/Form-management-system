@@ -60,7 +60,7 @@
 #endif
 #endif
 
-
+#include <QMap.h>
 #include "mainwindow.h"
 #include "mysqlit.h"
 
@@ -401,15 +401,19 @@ void MainWindow::tableInit()
     tableWidget->resizeColumnsToContents();
     tableWidget->resizeRowsToContents();
     tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tableWidget->setAlternatingRowColors(true);
+    tableWidget->verticalHeader()->setDefaultSectionSize(15);
+
+    tableWidget->verticalHeader()->setVisible(true);
+    tableWidget->horizontalHeader()->setVisible(true);
 
     dateEdit->setCalendarPopup(true);
     dateEdit->setFocusPolicy(Qt::NoFocus);
     dateEdit->setDate(QDateTime::currentDateTime().date());
     dateEdit->setDisplayFormat("yyyy-MM-dd");
-
-    textEditName->setReadOnly(true);
-    textEditTime->setReadOnly(true);
-    textEditType->setReadOnly(true);
+    
+    checkBoxRecently->setChecked(true);
+    checkBoxAll->setChecked(false);
 }
 
 void MainWindow::tableHandleShow(QTreeWidgetItem *item, int type)
@@ -418,22 +422,15 @@ void MainWindow::tableHandleShow(QTreeWidgetItem *item, int type)
 
     if (1 == type) {
         mySqlitDB.sqlitGetTableData(item->text(0), list);
-        textEditName->setText(item->text(0));
-        textEditTime->setText(item->text(0));
-        textEditType->setText("全部");
-
+        lineEditName->setText(item->text(0));
     } else {
         mySqlitDB.sqlitGetTableData(item->parent()->text(0), item->text(1), list);
-        textEditName->setText(item->text(0));
-        textEditTime->setText(item->text(2));
-        textEditType->setText(item->text(3));
-
+        lineEditName->setText(item->text(0));
     }
 
     for(int i = tableWidget->rowCount() - 1; i >= 0; i--) {
         tableWidget->removeRow(i);
     }
-
 
     int i = 0;
     for (const mysqlit::stru_table_data &data : list) {
@@ -477,12 +474,76 @@ void MainWindow::on_buttonAdd_clicked()
     tableWidget->insertRow(tableWidget->rowCount());
 }
 
+void MainWindow::on_checkBoxAll_clicked()
+{
+    if (checkBoxAll->isChecked()) {
+        checkBoxRecently->setChecked(false);
+    } else {
+        checkBoxRecently->setChecked(true);
+    }
+}
+
+void MainWindow::on_checkBoxRecently_clicked()
+{
+    if (checkBoxRecently->isChecked()) {
+        checkBoxAll->setChecked(false);
+    } else {
+        checkBoxAll->setChecked(true);
+    }
+}
+
 void MainWindow::on_buttonDel_clicked()
 {
+    QMap<int, int> list;
+    QList<QTableWidgetSelectionRange > rangList = tableWidget->selectedRanges();
+
+    for (int i = 0; i < rangList.size(); i++) {
+        int topRow = rangList[i].topRow();
+        int bottomRow = rangList[i].bottomRow();
+        for (int j = topRow; j <= bottomRow; j++) {
+            list.insert(j, j);
+        }
+    }
+    
+    for (auto item = list.end(); item != list.begin(); item--) {
+        qDebug() << "delete line = " << item.value();
+        tableWidget->removeRow(item.value());
+    }
+
+    
+#if 0
+    /*获取选中的列表里的所有条目*/
+    QList<QTableWidgetItem*> list = tableWidget->selectedItems();
+    
+    if (list.count() <= 0) {
+        QMessageBox::warning(this, tr("提示"),
+        tr("左击选择行，按住ctrl左击选择多行"),
+        QMessageBox::Ok);
+        return;
+    }
+
+    /*从列表中依次移除条目*/
+    for(int i = 0; i < list.count(); i++)
+    {
+        /*获取条目的行号*/
+        int row=tableWidget->row(list.at(i));
+        qDebug()<<"即将卸载的行号:"<<row;
+        delete list.at(i); //彻底删除条目
+
+        //因为上面的循环是以条目数量为准，所以卸载行号只需要卸载一行即可
+        if(row != -1) {
+            tableWidget->removeRow(row);
+        }
+    }
+#endif
+
+
+#if 0
     int rowIndex = tableWidget->currentRow();
      if (rowIndex != -1) {
          tableWidget->removeRow(rowIndex);
      }
+#endif
 //    QTableWidgetItem *curItem = tableWidget->currentItem();
 //    if(curItem != NULL) {
 //         //当前条目非空
@@ -493,6 +554,31 @@ void MainWindow::on_buttonDel_clicked()
 //    }
 }
 
+void MainWindow::on_buttonSave_clicked()
+{
+//    QList<QTableWidgetItem*> list = tableWidget->itemChanged();
+    
+//    if (list.count() <= 0) {
+//        QMessageBox::warning(this, tr("提示"),
+//        tr("左击选择行，按住ctrl左击选择多行"),
+//        QMessageBox::Ok);
+//        return;
+//    }
+
+//    /*从列表中依次移除条目*/
+//    for(int i = 0; i < list.count(); i++)
+//    {
+//        /*获取条目的行号*/
+//        int row=tableWidget->row(list.at(i));
+//        qDebug()<<"即将卸载的行号:"<<row;
+//        delete list.at(i); //彻底删除条目
+
+//        //因为上面的循环是以条目数量为准，所以卸载行号只需要卸载一行即可
+//        if(row != -1) {
+//            tableWidget->removeRow(row);
+//        }
+//    }
+}
 
 void MainWindow::on_actionNewTable_triggered()
 {
