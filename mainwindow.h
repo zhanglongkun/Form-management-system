@@ -77,6 +77,12 @@ public:
     void tableInit();
     void tableHandleShow(QTreeWidgetItem *item, int type);
 
+    void setupFontTreeAll();
+    void setupFontTreeRecently();
+    void removeItem(QTreeWidgetItem *item);
+    void removeSelectedItems(QTreeWidget *treeWidget);
+    void removeAllItems(QTreeWidget *treeWidget);
+
     mysqlit mySqlitDB;
 
 public slots:
@@ -102,7 +108,6 @@ public slots:
 private:
     QMap<QString, StyleItems> currentPageMap();
     void markUnmarkFonts(Qt::CheckState state);
-    void setupFontTree();
 
     QList<int> sampleSizes;
     QMap<QString, StyleItems> pageMap;

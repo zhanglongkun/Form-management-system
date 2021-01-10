@@ -17,13 +17,14 @@ public:
         QString name;
         QString time_group;
         QString trancetion_time;
-        double create_time;
+        long create_time;
         int type;
     } stru_table;
 
     typedef struct _stru_table_data {
         QString id;
         QString table_id;
+        QString time_group;
         QString name_number;
         QString name;
         QString specification;
@@ -38,12 +39,15 @@ public:
 
     mysqlit();
 
-    int sqlitCreateTable(double tableName);
     int sqlitGetTimeGroup(QStringList &data);
     int sqlitGetTableForMonth(QString field, QVector<stru_table> &list);
-    int sqlitGetTableData(QString table, QString id, QVector<stru_table_data> &list);
-    int sqlitGetTableData(QString table, QVector<stru_table_data> &list);
+    int sqlitGetTableData(int id, QVector<stru_table_data> &list);
+    int sqlitGetTableData(QString time_group, QVector<stru_table_data> &list);
     int sqlitSetTableInfo(stru_table info);
+    int sqlitGetNewestTableID(int &id);
+    int sqlitInsertData(stru_table_data data);
+    void sqlitGetTableRecently(QVector<stru_table> &list);
+
 
 
 

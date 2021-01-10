@@ -60,7 +60,6 @@
 #endif
 #endif
 
-#include <QMap.h>
 #include "mainwindow.h"
 #include "mysqlit.h"
 
@@ -74,8 +73,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     sampleSizes << 32 << 24 << 16 << 14 << 12 << 8 << 4 << 2 << 1;
     markedCount = 0;
-    setupFontTree();
-
+//    setupFontTreeAll();
+    setupFontTreeRecently();
 
     connect(quitAction, &QAction::triggered,
             qApp, &QApplication::quit);
@@ -93,14 +92,9 @@ MainWindow::MainWindow(QWidget *parent)
     showFont(fontTree->topLevelItem(0));
 }
 
-void MainWindow::setupFontTree()
+void MainWindow::setupFontTreeAll()
 {
-    QFontDatabase database;
-    fontTree->setColumnCount(2);
-    fontTree->setHeaderLabels({ tr("日期"), tr("id"), tr("time"), tr("type") });
-//    fontTree->header()->setVisible(false);
-//    fontTree->hideColumn(1);
-
+    fontTree->clear();
     QStringList timeGroup;
     mySqlitDB.sqlitGetTimeGroup(timeGroup);
 
@@ -122,33 +116,50 @@ void MainWindow::setupFontTree()
                 styleItem->setText(0, table.name);
                 styleItem->setText(1, table.id);
                 styleItem->setText(2, table.trancetion_time);
-                styleItem->setText(3, QString("%1").arg(table.type));
+                if (0 == table.type) {
+                    styleItem->setText(3, "其他");
+                } else if ( 1 == table.type) {
+                    styleItem->setText(3, "出货");
+                } else {
+                    styleItem->setText(3, "进货");
+                }
                // styleItem->setCheckState(0, Qt::Unchecked);
             }
         }
     }
     qDebug()<< "count " << timeGroup.count();
+}
 
+void MainWindow::setupFontTreeRecently()
+{
+    fontTree->clear();
 
-//    const QStringList fontFamilies = database.families();
-//    for (const QString &family : fontFamilies) {
-//        const QStringList styles = database.styles(family);
-//        if (styles.isEmpty())
-//            continue;
+    QTreeWidgetItem *familyItem = new QTreeWidgetItem(fontTree);
+    familyItem->setText(0, "最近");
+  //  familyItem->setCheckState(0, Qt::Unchecked);
+    familyItem->setFlags(familyItem->flags() | Qt::ItemIsAutoTristate);
 
-//        QTreeWidgetItem *familyItem = new QTreeWidgetItem(fontTree);
-//        familyItem->setText(0, family);
-//        familyItem->setCheckState(0, Qt::Unchecked);
-//        familyItem->setFlags(familyItem->flags() | Qt::ItemIsAutoTristate);
-
-//        for (const QString &style : styles) {
-//            QTreeWidgetItem *styleItem = new QTreeWidgetItem(familyItem);
-//            styleItem->setText(0, "11111111111111");
-//            styleItem->setCheckState(0, Qt::Unchecked);
-//            styleItem->setData(0, Qt::UserRole, QVariant(database.weight(family, style)));
-//            styleItem->setData(0, Qt::UserRole + 1, QVariant(database.italic(family, style)));
-//        }
-//    }
+    QVector<mysqlit::stru_table> tableList;
+    mySqlitDB.sqlitGetTableRecently(tableList);
+    if (tableList.isEmpty()) {
+        QTreeWidgetItem *styleItem = new QTreeWidgetItem(familyItem);
+        styleItem->setText(0, "无数据");
+    } else {
+        for (const mysqlit::stru_table &table : tableList) {
+            QTreeWidgetItem *styleItem = new QTreeWidgetItem(familyItem);
+            styleItem->setText(0, table.name);
+            styleItem->setText(1, table.id);
+            styleItem->setText(2, table.trancetion_time);
+            if (0 == table.type) {
+                styleItem->setText(3, "其他");
+            } else if ( 1 == table.type) {
+                styleItem->setText(3, "出货");
+            } else {
+                styleItem->setText(3, "进货");
+            }
+           // styleItem->setCheckState(0, Qt::Unchecked);
+        }
+    }
 }
 
 void MainWindow::on_clearAction_triggered()
@@ -385,6 +396,9 @@ void MainWindow::printPage(int index, QPainter *painter, QPrinter *printer)
 
 void MainWindow::tableInit()
 {
+    fontTree->setColumnCount(4);
+    fontTree->setHeaderLabels({ tr("组"), tr("id"), tr("日期"), tr("type") });
+
     QStringList headerList;
 
     headerList << "id" << "table_id"<< "商品编号" << "名称" << "规格" << "单位" << "数量" << "单价" << "金额" << "备注";
@@ -414,6 +428,40 @@ void MainWindow::tableInit()
     checkBoxAll->setChecked(false);
 }
 
+//递归删除节点
+void MainWindow::removeItem(QTreeWidgetItem *item)
+{
+    int count = item->childCount();
+    if(count == 0)//没有子节点，直接删除
+    {
+        delete item;
+        return;
+    }
+
+    for(int i = 0; i < count; i++)
+    {
+        QTreeWidgetItem *childItem = item->child(0);//删除子节点
+        removeItem(childItem);
+    }
+    delete item;//最后将自己删除
+
+}
+
+//删除选中的节点及子节点
+void  MainWindow::removeSelectedItems(QTreeWidget *treeWidget)
+{
+    QList<QTreeWidgetItem*> items = treeWidget->selectedItems();
+
+    for (int i = 0; i < items.size(); ++i) {
+        removeItem(items[i]);
+    }
+}
+
+void MainWindow::removeAllItems(QTreeWidget *treeWidget)
+{
+    treeWidget->clear();
+}
+
 void MainWindow::tableHandleShow(QTreeWidgetItem *item, int type)
 {
     QVector<mysqlit::stru_table_data> list;
@@ -425,7 +473,7 @@ void MainWindow::tableHandleShow(QTreeWidgetItem *item, int type)
         dateEdit->setDisplayFormat("yyyy-MM");
         dateEdit->setDate(QDate::fromString(item->text(0),"yyyy-MM"));
     } else {
-        mySqlitDB.sqlitGetTableData(item->parent()->text(0), item->text(1), list);
+        mySqlitDB.sqlitGetTableData(item->text(1).toInt(), list);
         lineEditName->setText(item->text(0));
         dateEdit->setDisplayFormat("yyyy-MM-dd");
         dateEdit->setDate(QDate::fromString(item->text(2),"yyyy-MM-dd"));
@@ -491,6 +539,7 @@ void MainWindow::on_checkBoxAll_clicked()
 {
     if (checkBoxAll->isChecked()) {
         checkBoxRecently->setChecked(false);
+        setupFontTreeAll();
     } else {
         checkBoxRecently->setChecked(true);
     }
@@ -500,6 +549,7 @@ void MainWindow::on_checkBoxRecently_clicked()
 {
     if (checkBoxRecently->isChecked()) {
         checkBoxAll->setChecked(false);
+        setupFontTreeRecently();
     } else {
         checkBoxAll->setChecked(true);
     }

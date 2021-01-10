@@ -10,12 +10,12 @@
 #define SQL_INSERT_TABLE_LIST "INSERT INTO table_list \
     (name, time_group, trancetion_time, create_time, type) VALUES (\"%1\", \"%2\", \"%3\", \"%4\", \"%5\")"
 
-#define SQL_CREATE_TABLE "CREATE TABLE IF NOT EXISTS \"table_%1\" \
-    (id INTEGER PRIMARY KEY AUTOINCREMENT, table_id INTEGER, name_number text, name text, specification text, unit text, number REAL, price REAL, price_sum REAL, comment text)"
+#define SQL_CREATE_DATA_TABLE "CREATE TABLE IF NOT EXISTS \"data\" \
+    (id INTEGER PRIMARY KEY AUTOINCREMENT, table_id INTEGER, time_group text, name_number text, name text, specification text, unit text, number REAL, price REAL, price_sum REAL, comment text)"
 
-#define SQL_INSERT_DATA "INSERT INTO \"table_%1\" \
-    (table_id, name_number, name, specification, unit, number, price, price_sum, comment) \
-    VALUES (\"%2\", \"%3\", \"%4\", \"%5\", \"%6\", \"%7\", \"%8\", \"%9\", \"%10\")"
+#define SQL_INSERT_DATA "INSERT INTO \"data\" \
+    (table_id, time_group, name_number, name, specification, unit, number, price, price_sum, comment) \
+    VALUES (\"%1\", \"%2\", \"%3\", \"%4\", \"%5\", \"%6\", \"%7\", \"%8\", \"%9\", \"%10\")"
 
 
 mysqlit::mysqlit()
@@ -39,22 +39,14 @@ mysqlit::mysqlit()
     } else {
         qDebug() << "Table created!";
     }
-}
 
-
-int mysqlit::sqlitCreateTable(double tableName)
-{
-    QSqlQuery sql_query;
-
-    QString sql_cmd = QString(SQL_CREATE_TABLE).arg(tableName);
-
+    sql_cmd = SQL_CREATE_DATA_TABLE;
     if(!sql_query.exec(sql_cmd)) {
-        qDebug() << "Error: Fail to create table."<< sql_query.lastError();
+     qDebug() << "Error: Fail to create table."<< sql_query.lastError();
     } else {
-        qDebug() << "Table created!";
+     qDebug() << "Table created!";
     }
 
-    return 0;
 }
 
 
@@ -101,16 +93,17 @@ int mysqlit::sqlitGetTimeGroup(QStringList &data)
 }
 
 
-int mysqlit::sqlitGetTableData(QString table, QString id, QVector<stru_table_data> &list)
+int mysqlit::sqlitGetTableData(int id, QVector<stru_table_data> &list)
 {
     QSqlQuery sql_query;
 
-    QString sql_cmd =QString("select id, table_id, name_number, name, specification, unit, number, price, price_sum, comment FROM \"table_%1\" WHERE id = \"%2\"").arg(table).arg(id);
-    //    qDebug() << sql_cmd;
+    QString sql_cmd =QString("select id, table_id, name_number, name, specification, unit, number, price, price_sum, comment FROM data WHERE table_id = %1").arg(id);
+        qDebug() << "jjjjjjjjjjj" <<sql_cmd;
     if(!sql_query.exec(sql_cmd)) {
         qDebug() << "Error: Fail to create table."<< sql_query.lastError();
     } else {
         while(sql_query.next()) {
+            qDebug() << "dddddddddd" ;
             stru_table_data table;
             table.id = sql_query.value(0).toString();
             table.table_id = sql_query.value(1).toString();
@@ -130,11 +123,11 @@ int mysqlit::sqlitGetTableData(QString table, QString id, QVector<stru_table_dat
     return 0;
 }
 
-int mysqlit::sqlitGetTableData(QString table, QVector<stru_table_data> &list)
+int mysqlit::sqlitGetTableData(QString time_group, QVector<stru_table_data> &list)
 {
    QSqlQuery sql_query;
 
-   QString sql_cmd =QString("select id, table_id, name_number, name, specification, unit, number, price, price_sum, comment FROM \"table_%1\"").arg(table);
+   QString sql_cmd =QString("select id, table_id, name_number, name, specification, unit, number, price, price_sum, comment FROM \"data\" where time_group=%1").arg(time_group);
    //    qDebug() << sql_cmd;
    if(!sql_query.exec(sql_cmd)) {
        qDebug() << "Error: Fail to create table."<< sql_query.lastError();
@@ -154,10 +147,11 @@ int mysqlit::sqlitGetTableData(QString table, QVector<stru_table_data> &list)
 
             list.append(table);
        }
- }
+   }
 
- return 0;
+   return 0;
 }
+
 int mysqlit::sqlitSetTableInfo(stru_table info)
 {
     QSqlQuery sql_query;
@@ -170,8 +164,66 @@ int mysqlit::sqlitSetTableInfo(stru_table info)
     } else {
         qDebug() << "list created!";
     }
+
+    return 0;
 }
 
+int mysqlit::sqlitGetNewestTableID(int &id)
+{
+     QSqlQuery sql_query;
+     QString sql_cmd;
+
+     sql_cmd = QString("select id from table_list order by create_time desc limit 0,1;");
+     qDebug() << "111111" << sql_cmd;
+     if(!sql_query.exec(sql_cmd)) {
+         qDebug() << "Error: Fail to create table."<< sql_query.lastError();
+     } else {
+         while(sql_query.next()) {
+            id = sql_query.value(0).toInt();
+         }
+     }
+}
+
+int mysqlit::sqlitInsertData(stru_table_data data)
+{
+    QSqlQuery sql_query;
+    QString sql_cmd;
+    
+    sql_cmd = QString(SQL_INSERT_DATA).arg(data.table_id).arg(data.time_group).arg(data.name_number)
+                 .arg(data.name).arg(data.specification).arg(data.unit).arg(data.number)
+                 .arg(data.price).arg(data.price_sum).arg(data.comment);
+    qDebug() << "111111" << sql_cmd;
+    if(!sql_query.exec(sql_cmd)) {
+        qDebug() << "Error: Fail to create table."<< sql_query.lastError();
+    } else {
+    }
+    
+}
+
+void mysqlit::sqlitGetTableRecently(QVector<stru_table> &list)
+{
+
+    QSqlQuery sql_query;
+
+    QString sql_cmd =QString("select id, name, trancetion_time, type FROM table_list ORDER BY create_time DESC limit 0, 50");
+    //    qDebug() << sql_cmd;
+    if(!sql_query.exec(sql_cmd)) {
+    qDebug() << "Error: Fail to create table."<< sql_query.lastError();
+    } else {
+        while(sql_query.next()) {
+            stru_table table;
+            table.id = sql_query.value(0).toString();
+            table.name = sql_query.value(1).toString();
+            //            table.trancetion_time = QDateTime::fromTime_t(sql_query.value(2).toInt()).toString("yyyy-MM-dd");
+            table.trancetion_time = sql_query.value(2).toString();
+            table.type = sql_query.value(3).toInt();
+            list.append(table);
+        }
+    }
+
+    return;
+
+}
 
 
 int mysqlit::testInit()
@@ -193,15 +245,6 @@ int mysqlit::testInit()
             qDebug() << "Error: Fail to create table."<< sql_query.lastError();
         } else {
             qDebug() << "list created!";
-        }
-
-
-        sql_cmd = QString(SQL_CREATE_TABLE).arg(timeGroup);
-        qDebug() << "111111" << sql_cmd;
-        if(!sql_query.exec(sql_cmd)) {
-           qDebug() << "Error: Fail to create table."<< sql_query.lastError();
-        } else {
-           qDebug() << "list created!";
         }
 
         sql_cmd = QString(SQL_INSERT_DATA).arg(timeGroup).arg(timeGroup).arg("编号").arg("名称aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").arg("规格aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").arg("单位").arg("数量").arg("单价").arg("金额").arg("备注");

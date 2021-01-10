@@ -81,6 +81,32 @@ void DialogNewTable::closeEvent(QCloseEvent *e)
         table.type = ui->comboBox->currentIndex();
         MainWindow *mainWin = (MainWindow*) parentWidget();
         mainWin->mySqlitDB.sqlitSetTableInfo(table);
+
+        qDebug() << "time " << table.create_time<< "type" << table.type;
+
+        int id;
+        mainWin->mySqlitDB.sqlitGetNewestTableID(id);
+        qDebug() << "id = " << id;
+
+        int sum;
+        mysqlit::stru_table_data data;
+        for(int i = 0; i < ui->tableWidget->rowCount(); i++) {
+            data.table_id = QString("%1").arg(id);
+            data.time_group = table.time_group;
+            data.name_number =  ui->tableWidget->item(i, 0)->text();
+            data.name =  ui->tableWidget->item(i, 1)->text();
+            data.specification =  ui->tableWidget->item(i, 2)->text();
+            data.unit =  ui->tableWidget->item(i, 3)->text();
+            data.number =  ui->tableWidget->item(i, 4)->text();
+            data.price =  ui->tableWidget->item(i, 5)->text();
+            data.comment =  ui->tableWidget->item(i, 6)->text();
+            sum = data.number.toInt() * data.price.toInt();
+            data.price_sum = QString("%1").arg(sum);
+
+            mainWin->mySqlitDB.sqlitInsertData(data);
+        }
+
+
     } else {
 
     }
