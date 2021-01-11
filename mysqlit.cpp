@@ -188,7 +188,7 @@ int mysqlit::sqlitInsertData(stru_table_data data)
 {
     QSqlQuery sql_query;
     QString sql_cmd;
-    
+
     sql_cmd = QString(SQL_INSERT_DATA).arg(data.table_id).arg(data.time_group).arg(data.name_number)
                  .arg(data.name).arg(data.specification).arg(data.unit).arg(data.number)
                  .arg(data.price).arg(data.price_sum).arg(data.comment);
@@ -197,7 +197,7 @@ int mysqlit::sqlitInsertData(stru_table_data data)
         qDebug() << "Error: Fail to create table."<< sql_query.lastError();
     } else {
     }
-    
+    return 0;
 }
 
 void mysqlit::sqlitGetTableRecently(QVector<stru_table> &list)

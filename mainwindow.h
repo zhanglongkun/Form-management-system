@@ -77,8 +77,6 @@ public:
     void tableInit();
     void tableHandleShow(QTreeWidgetItem *item, int type);
 
-    void setupFontTreeAll();
-    void setupFontTreeRecently();
     void removeItem(QTreeWidgetItem *item);
     void removeSelectedItems(QTreeWidget *treeWidget);
     void removeAllItems(QTreeWidget *treeWidget);
@@ -102,6 +100,10 @@ public slots:
     void on_actionNewTable_triggered();
     void on_checkBoxAll_clicked();
     void on_checkBoxRecently_clicked();
+
+    void setupFontTreeAll();
+    void setupFontTreeRecently();
+
 
 
 

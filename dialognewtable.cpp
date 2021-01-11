@@ -18,13 +18,13 @@ DialogNewTable::DialogNewTable(QWidget *parent) :
 
     ui->tableWidget->setColumnCount(7);
     ui->tableWidget->setRowCount(0);
+    ui->tableWidget->horizontalHeader()->setMinimumHeight(30);
 
     ui->tableWidget->setHorizontalHeaderLabels(headerList);
     ui->tableWidget->horizontalHeader()->setStyleSheet("QHeaderView::section{"
                                                    "background-color: #b4b8bb;"
                                                    "font: 12pt}");
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    ui->tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     ui->tableWidget->resizeColumnsToContents();
     ui->tableWidget->resizeRowsToContents();
     ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -93,22 +93,45 @@ void DialogNewTable::closeEvent(QCloseEvent *e)
         for(int i = 0; i < ui->tableWidget->rowCount(); i++) {
             data.table_id = QString("%1").arg(id);
             data.time_group = table.time_group;
-            data.name_number =  ui->tableWidget->item(i, 0)->text();
-            data.name =  ui->tableWidget->item(i, 1)->text();
-            data.specification =  ui->tableWidget->item(i, 2)->text();
-            data.unit =  ui->tableWidget->item(i, 3)->text();
-            data.number =  ui->tableWidget->item(i, 4)->text();
-            data.price =  ui->tableWidget->item(i, 5)->text();
-            data.comment =  ui->tableWidget->item(i, 6)->text();
+
+            if (ui->tableWidget->item(i, 0) != 0) {
+                data.name_number =  ui->tableWidget->item(i, 0)->text();
+            }
+
+            if (ui->tableWidget->item(i, 1) != 0) {
+                data.name =  ui->tableWidget->item(i, 1)->text();
+            }
+
+            if (ui->tableWidget->item(i, 2) != 0) {
+                data.specification =  ui->tableWidget->item(i, 2)->text();
+            }
+
+            if (ui->tableWidget->item(i, 3) != 0) {
+                data.unit =  ui->tableWidget->item(i, 3)->text();
+            }
+
+            if (ui->tableWidget->item(i, 4) != 0) {
+                data.number =  ui->tableWidget->item(i, 4)->text();
+            }
+
+            if (ui->tableWidget->item(i, 5) != 0) {
+                data.price =  ui->tableWidget->item(i, 5)->text();
+            }
+
+            if (ui->tableWidget->item(i, 6) != 0) {
+                data.comment =  ui->tableWidget->item(i, 6)->text();
+            }
+
             sum = data.number.toInt() * data.price.toInt();
             data.price_sum = QString("%1").arg(sum);
 
             mainWin->mySqlitDB.sqlitInsertData(data);
+            emit ExitWin();
+
         }
-
-
     } else {
 
     }
+
 }
 

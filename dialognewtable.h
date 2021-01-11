@@ -22,6 +22,9 @@ public slots:
     void on_buttonAdd_clicked();
     void on_buttonDel_clicked();
     void closeEvent(QCloseEvent *e);
+
+signals:
+    void ExitWin();
 };
 
 #endif // DIALOGNEWTABLE_H

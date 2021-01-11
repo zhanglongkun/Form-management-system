@@ -73,6 +73,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     sampleSizes << 32 << 24 << 16 << 14 << 12 << 8 << 4 << 2 << 1;
     markedCount = 0;
+    tableInit();
+
 //    setupFontTreeAll();
     setupFontTreeRecently();
 
@@ -86,7 +88,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(tableWidget, SIGNAL(itemChanged(QTableWidgetItem*)),
             tableWidget, SLOT(resizeRowsToContents()));
 
-    tableInit();
 
     fontTree->topLevelItem(0)->setSelected(true);
     showFont(fontTree->topLevelItem(0));
@@ -94,7 +95,11 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::setupFontTreeAll()
 {
+    checkBoxAll->setChecked(true);
+    checkBoxRecently->setChecked(false);
+
     fontTree->clear();
+
     QStringList timeGroup;
     mySqlitDB.sqlitGetTimeGroup(timeGroup);
 
@@ -132,6 +137,10 @@ void MainWindow::setupFontTreeAll()
 
 void MainWindow::setupFontTreeRecently()
 {
+    checkBoxAll->setChecked(false);
+    checkBoxRecently->setChecked(true);
+
+    qDebug() << __LINE__;
     fontTree->clear();
 
     QTreeWidgetItem *familyItem = new QTreeWidgetItem(fontTree);
@@ -398,6 +407,7 @@ void MainWindow::tableInit()
 {
     fontTree->setColumnCount(4);
     fontTree->setHeaderLabels({ tr("组"), tr("id"), tr("日期"), tr("type") });
+    fontTree->hideColumn(1);
 
     QStringList headerList;
 
@@ -405,19 +415,22 @@ void MainWindow::tableInit()
 
     tableWidget->setColumnCount(10);
     tableWidget->setRowCount(0);
+    tableWidget->hideColumn(0);
+    tableWidget->hideColumn(1);
 
     tableWidget->setHorizontalHeaderLabels(headerList);
     tableWidget->horizontalHeader()->setStyleSheet("QHeaderView::section{"
                                                    "background-color: #b4b8bb;"
                                                    "font: 12pt}");
+
     tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+//    tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     tableWidget->resizeColumnsToContents();
     tableWidget->resizeRowsToContents();
     tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableWidget->setAlternatingRowColors(true);
-    tableWidget->verticalHeader()->setDefaultSectionSize(15);
-
+    tableWidget->verticalHeader()->setDefaultSectionSize(25);
+    tableWidget->horizontalHeader()->setMinimumHeight(30);
     tableWidget->verticalHeader()->setVisible(true);
     tableWidget->horizontalHeader()->setVisible(true);
 
@@ -648,4 +661,5 @@ void MainWindow::on_actionNewTable_triggered()
     newWindow = new DialogNewTable();
     newWindow->show();
 
+    connect(newWindow, SIGNAL(ExitWin()), this, SLOT(setupFontTreeRecently()));
 }
