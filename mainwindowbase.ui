@@ -271,7 +271,7 @@
     <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
    </property>
    <property name="windowTitle">
-    <string>Available Fonts</string>
+    <string/>
    </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
@@ -339,30 +339,12 @@
      <height>26</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu_Selection">
-    <property name="title">
-     <string>&amp;Selection</string>
-    </property>
-    <addaction name="markAction"/>
-    <addaction name="unmarkAction"/>
-    <addaction name="clearAction"/>
-   </widget>
-   <widget class="QMenu" name="menu_File">
-    <property name="title">
-     <string>&amp;File</string>
-    </property>
-    <addaction name="printPreviewAction"/>
-    <addaction name="printAction"/>
-    <addaction name="quitAction"/>
-   </widget>
    <widget class="QMenu" name="menuNewTable">
     <property name="title">
      <string>新建</string>
     </property>
     <addaction name="actionNewTable"/>
    </widget>
-   <addaction name="menu_File"/>
-   <addaction name="menu_Selection"/>
    <addaction name="menuNewTable"/>
   </widget>
   <action name="printAction">

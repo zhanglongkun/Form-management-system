@@ -415,8 +415,8 @@ void MainWindow::tableInit()
 
     tableWidget->setColumnCount(10);
     tableWidget->setRowCount(0);
-    tableWidget->hideColumn(0);
-    tableWidget->hideColumn(1);
+//    tableWidget->hideColumn(0);
+//    tableWidget->hideColumn(1);
 
     tableWidget->setHorizontalHeaderLabels(headerList);
     tableWidget->horizontalHeader()->setStyleSheet("QHeaderView::section{"
@@ -424,13 +424,14 @@ void MainWindow::tableInit()
                                                    "font: 12pt}");
 
     tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-//    tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    tableWidget->horizontalHeader()->setHighlightSections(false);
+    tableWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     tableWidget->resizeColumnsToContents();
     tableWidget->resizeRowsToContents();
     tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableWidget->setAlternatingRowColors(true);
-    tableWidget->verticalHeader()->setDefaultSectionSize(25);
-    tableWidget->horizontalHeader()->setMinimumHeight(30);
+    tableWidget->verticalHeader()->setDefaultSectionSize(30);
+    tableWidget->horizontalHeader()->setMinimumHeight(40);
     tableWidget->verticalHeader()->setVisible(true);
     tableWidget->horizontalHeader()->setVisible(true);
 
@@ -581,7 +582,7 @@ void MainWindow::on_buttonDel_clicked()
         }
     }
     
-    for (auto item = list.end(); item != list.begin(); item--) {
+    for (auto item = --list.end(); item != --list.begin(); item--) {
         qDebug() << "delete line = " << item.value();
         tableWidget->removeRow(item.value());
     }
@@ -632,28 +633,61 @@ void MainWindow::on_buttonDel_clicked()
 
 void MainWindow::on_buttonSave_clicked()
 {
-//    QList<QTableWidgetItem*> list = tableWidget->itemChanged();
-    
-//    if (list.count() <= 0) {
-//        QMessageBox::warning(this, tr("提示"),
-//        tr("左击选择行，按住ctrl左击选择多行"),
-//        QMessageBox::Ok);
-//        return;
-//    }
+    int sum;
+    mysqlit::stru_table_data data;
 
-//    /*从列表中依次移除条目*/
-//    for(int i = 0; i < list.count(); i++)
-//    {
-//        /*获取条目的行号*/
-//        int row=tableWidget->row(list.at(i));
-//        qDebug()<<"即将卸载的行号:"<<row;
-//        delete list.at(i); //彻底删除条目
+    for (int i = 0; i < tableWidget->rowCount(); i++) {
+        mysqlit::stru_table_data data;
 
-//        //因为上面的循环是以条目数量为准，所以卸载行号只需要卸载一行即可
-//        if(row != -1) {
-//            tableWidget->removeRow(row);
-//        }
-//    }
+         data.table_id = fontTree->currentItem()->text(1);
+        if (tableWidget->item(i, 0) != 0) {
+            data.id = tableWidget->item(i, 0)->text();
+        }
+
+        if (tableWidget->item(i, 1) != 0) {
+//            data.table_id = tableWidget->item(i, 1)->text();
+        }
+
+        if (tableWidget->item(i, 2) != 0) {
+            data.name_number =  tableWidget->item(i, 2)->text();
+        }
+
+        if (tableWidget->item(i, 3) != 0) {
+            data.name =  tableWidget->item(i, 3)->text();
+        }
+
+        if (tableWidget->item(i, 4) != 0) {
+            data.specification =  tableWidget->item(i, 4)->text();
+        }
+
+        if (tableWidget->item(i, 5) != 0) {
+            data.unit =  tableWidget->item(i, 5)->text();
+        }
+
+        if (tableWidget->item(i, 6) != 0) {
+            data.number =  tableWidget->item(i, 6)->text();
+        }
+
+        if (tableWidget->item(i, 7) != 0) {
+            data.price =  tableWidget->item(i, 7)->text();
+        }
+
+        if (tableWidget->item(i, 9) != 0) {
+            data.comment =  tableWidget->item(i, 9)->text();
+        }
+
+        sum = data.number.toInt() * data.price.toInt();
+        data.price_sum = QString("%1").arg(sum);
+
+        data.time_group = dateEdit->date().toString(("yyyy-MM"));
+
+
+        if (tableWidget->item(i, 0) != 0) {
+            mySqlitDB.sqlitUpdateData(data);
+        } else {
+            mySqlitDB.sqlitInsertData(data);
+        }
+    }
 }
 
 void MainWindow::on_actionNewTable_triggered()

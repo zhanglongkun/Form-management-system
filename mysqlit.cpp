@@ -17,6 +17,10 @@
     (table_id, time_group, name_number, name, specification, unit, number, price, price_sum, comment) \
     VALUES (\"%1\", \"%2\", \"%3\", \"%4\", \"%5\", \"%6\", \"%7\", \"%8\", \"%9\", \"%10\")"
 
+#define SQL_UPDATA_DATA "UPDATE \"data\" SET \
+    table_id=\"%1\", time_group=\"%2\", name_number=\"%3\", name=\"%4\", specification=\"%5\", \
+    unit=\"%6\", number=\"%7\", price=\"%8\", price_sum=\"%9\", comment=\"%10\" WHERE id==\"%11\""
+
 
 mysqlit::mysqlit()
 {
@@ -182,6 +186,8 @@ int mysqlit::sqlitGetNewestTableID(int &id)
             id = sql_query.value(0).toInt();
          }
      }
+
+    return 0;
 }
 
 int mysqlit::sqlitInsertData(stru_table_data data)
@@ -200,6 +206,23 @@ int mysqlit::sqlitInsertData(stru_table_data data)
     return 0;
 }
 
+int mysqlit::sqlitUpdateData(stru_table_data data)
+{
+   QSqlQuery sql_query;
+   QString sql_cmd;
+
+   sql_cmd = QString(SQL_UPDATA_DATA).arg(data.table_id).arg(data.time_group).arg(data.name_number)
+              .arg(data.name).arg(data.specification).arg(data.unit).arg(data.number)
+              .arg(data.price).arg(data.price_sum).arg(data.comment).arg(data.id);
+   qDebug() << "111111" << sql_cmd;
+   if(!sql_query.exec(sql_cmd)) {
+       qDebug() << "Error: Fail to create table."<< sql_query.lastError();
+        return -1;
+   } else {
+   }
+   return 0;
+}
+
 void mysqlit::sqlitGetTableRecently(QVector<stru_table> &list)
 {
 
@@ -208,7 +231,7 @@ void mysqlit::sqlitGetTableRecently(QVector<stru_table> &list)
     QString sql_cmd =QString("select id, name, trancetion_time, type FROM table_list ORDER BY create_time DESC limit 0, 50");
     //    qDebug() << sql_cmd;
     if(!sql_query.exec(sql_cmd)) {
-    qDebug() << "Error: Fail to create table."<< sql_query.lastError();
+        qDebug() << "Error: Fail to create table."<< sql_query.lastError();
     } else {
         while(sql_query.next()) {
             stru_table table;

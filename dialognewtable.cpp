@@ -28,6 +28,7 @@ DialogNewTable::DialogNewTable(QWidget *parent) :
     ui->tableWidget->resizeColumnsToContents();
     ui->tableWidget->resizeRowsToContents();
     ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->tableWidget->horizontalHeader()->setHighlightSections(false);
 
     ui->dateEdit->setCalendarPopup(true);
 //    ui->dateEdit->setFocusPolicy(Qt::NoFocus);
@@ -59,7 +60,7 @@ void DialogNewTable::on_buttonDel_clicked()
         }
     }
 
-    for (auto item = list.end(); item != list.begin(); item--) {
+    for (auto item = --list.end(); item != --list.begin(); item--) {
         qDebug() << "delete line = " << item.value();
         ui->tableWidget->removeRow(item.value());
     }

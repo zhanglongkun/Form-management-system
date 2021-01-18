@@ -46,6 +46,7 @@ public:
     int sqlitSetTableInfo(stru_table info);
     int sqlitGetNewestTableID(int &id);
     int sqlitInsertData(stru_table_data data);
+    int sqlitUpdateData(stru_table_data data);
     void sqlitGetTableRecently(QVector<stru_table> &list);
 
 
