@@ -89,7 +89,7 @@ void DialogNewTable::closeEvent(QCloseEvent *e)
         mainWin->mySqlitDB.sqlitGetNewestTableID(id);
         qDebug() << "id = " << id;
 
-        int sum;
+        float sum  = 0;
         mysqlit::stru_table_data data;
         for(int i = 0; i < ui->tableWidget->rowCount(); i++) {
             data.table_id = QString("%1").arg(id);
@@ -123,7 +123,7 @@ void DialogNewTable::closeEvent(QCloseEvent *e)
                 data.comment =  ui->tableWidget->item(i, 6)->text();
             }
 
-            sum = data.number.toInt() * data.price.toInt();
+            sum = data.number.toFloat() * data.price.toFloat();
             data.price_sum = QString("%1").arg(sum);
 
             mainWin->mySqlitDB.sqlitInsertData(data);

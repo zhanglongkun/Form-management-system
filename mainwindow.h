@@ -75,7 +75,9 @@ public:
     MainWindow(QWidget *parent = nullptr);
 
     void tableInit();
-    void tableHandleShow(QTreeWidgetItem *item, int type);
+    void showTableData(QTreeWidgetItem *item, int type);
+    void showTableList(QString group);
+    void showCurrentTable();
 
     void removeItem(QTreeWidgetItem *item);
     void removeSelectedItems(QTreeWidget *treeWidget);

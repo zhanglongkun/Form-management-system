@@ -47,10 +47,9 @@ public:
     int sqlitGetNewestTableID(int &id);
     int sqlitInsertData(stru_table_data data);
     int sqlitUpdateData(stru_table_data data);
+    int sqlitDeleteData(QString id);
     void sqlitGetTableRecently(QVector<stru_table> &list);
-
-
-
+    void sqlitGetTableListForGroup(QString group, QVector<stru_table> &list);
 
 
     //test

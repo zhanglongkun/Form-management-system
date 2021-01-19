@@ -214,9 +214,9 @@ void MainWindow::showFont(QTreeWidgetItem *item)
         weight = item->data(0, Qt::UserRole).toInt();
         italic = item->data(0, Qt::UserRole + 1).toBool();
 
-        tableHandleShow(item, 0);
+        showTableData(item, 0);
     } else {
-        tableHandleShow(item, 1);
+//        showTableData(item, 1);
     }
 }
 
@@ -438,6 +438,11 @@ void MainWindow::tableInit()
     dateEdit->setCalendarPopup(true);
     dateEdit->setFocusPolicy(Qt::NoFocus);
 
+    lineEditSum->setEnabled(false);
+    QPalette palette;
+    palette.setColor(QPalette::Text,Qt::red);
+    lineEditSum->setPalette(palette);
+
     checkBoxRecently->setChecked(true);
     checkBoxAll->setChecked(false);
 }
@@ -446,14 +451,13 @@ void MainWindow::tableInit()
 void MainWindow::removeItem(QTreeWidgetItem *item)
 {
     int count = item->childCount();
-    if(count == 0)//没有子节点，直接删除
-    {
+    if (count == 0) {
+        //没有子节点，直接删除
         delete item;
         return;
     }
 
-    for(int i = 0; i < count; i++)
-    {
+    for (int i = 0; i < count; i++) {
         QTreeWidgetItem *childItem = item->child(0);//删除子节点
         removeItem(childItem);
     }
@@ -476,7 +480,7 @@ void MainWindow::removeAllItems(QTreeWidget *treeWidget)
     treeWidget->clear();
 }
 
-void MainWindow::tableHandleShow(QTreeWidgetItem *item, int type)
+void MainWindow::showTableData(QTreeWidgetItem *item, int type)
 {
     QVector<mysqlit::stru_table_data> list;
 
@@ -502,12 +506,12 @@ void MainWindow::tableHandleShow(QTreeWidgetItem *item, int type)
         }
     }
 
-
     for(int i = tableWidget->rowCount() - 1; i >= 0; i--) {
         tableWidget->removeRow(i);
     }
 
     int i = 0;
+    float sum = 0;
     for (const mysqlit::stru_table_data &data : list) {
         tableWidget->insertRow(tableWidget->rowCount());
         QTableWidgetItem *item0 = new QTableWidgetItem(data.id);
@@ -536,12 +540,28 @@ void MainWindow::tableHandleShow(QTreeWidgetItem *item, int type)
 
         QTableWidgetItem *item8 = new QTableWidgetItem(data.price_sum);
         tableWidget->setItem(i, 8, item8);
+        sum += data.price_sum.toFloat();
 
         QTableWidgetItem *item9 = new QTableWidgetItem(data.comment);
         tableWidget->setItem(i, 9, item9);
 
         i++;
     }
+
+    lineEditSum->setText(QString("%1").arg(sum));
+}
+
+void MainWindow::showTableList(QString group)
+{
+    QVector<mysqlit::stru_table> tableList;
+
+    mySqlitDB.sqlitGetTableListForGroup(group, tableList);
+}
+
+void MainWindow::showCurrentTable()
+{
+    QTreeWidgetItem *item = fontTree->currentItem();
+    showTableData(item, 0);
 }
 
 void MainWindow::on_buttonAdd_clicked()
@@ -556,6 +576,7 @@ void MainWindow::on_checkBoxAll_clicked()
         setupFontTreeAll();
     } else {
         checkBoxRecently->setChecked(true);
+        setupFontTreeRecently();
     }
 }
 
@@ -566,6 +587,7 @@ void MainWindow::on_checkBoxRecently_clicked()
         setupFontTreeRecently();
     } else {
         checkBoxAll->setChecked(true);
+        setupFontTreeAll();
     }
 }
 
@@ -582,7 +604,13 @@ void MainWindow::on_buttonDel_clicked()
         }
     }
     
+    float sum = lineEditSum->text().toFloat();
+
     for (auto item = --list.end(); item != --list.begin(); item--) {
+        QString id = tableWidget->item(item.value(), 0)->text();
+        mySqlitDB.sqlitDeleteData(id);
+        sum -= tableWidget->item(item.value(), 8)->text().toFloat();
+        lineEditSum->setText(QString("%1").arg(sum));
         qDebug() << "delete line = " << item.value();
         tableWidget->removeRow(item.value());
     }
@@ -633,7 +661,7 @@ void MainWindow::on_buttonDel_clicked()
 
 void MainWindow::on_buttonSave_clicked()
 {
-    int sum;
+    float sum = 0;
     mysqlit::stru_table_data data;
 
     for (int i = 0; i < tableWidget->rowCount(); i++) {
@@ -676,7 +704,7 @@ void MainWindow::on_buttonSave_clicked()
             data.comment =  tableWidget->item(i, 9)->text();
         }
 
-        sum = data.number.toInt() * data.price.toInt();
+        sum = data.number.toFloat() * data.price.toFloat();
         data.price_sum = QString("%1").arg(sum);
 
         data.time_group = dateEdit->date().toString(("yyyy-MM"));
@@ -688,6 +716,8 @@ void MainWindow::on_buttonSave_clicked()
             mySqlitDB.sqlitInsertData(data);
         }
     }
+
+    showCurrentTable();
 }
 
 void MainWindow::on_actionNewTable_triggered()
